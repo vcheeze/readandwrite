@@ -7,19 +7,19 @@ using namespace std;
 int main(int argc, char *argv[]) {
   std::cout << "Creating the shared segment!" << std::endl;
 
-  int id = 0;
+  int shmid = 0, err = 0;
   int *mem;
 
   // Create shared memory segment
-  id = shmget(IPC_PRIVATE, 10, 0666);
-  if (id == -1) {
+  shmid = shmget(IPC_PRIVATE, 10, 0666);
+  if (shmid == -1) {
     cerr << "Shared Memory: Creation failed" << endl;
   } else {
-    cout << "Allocated Shared Memory with ID: " << id << endl;
+    cout << "Allocated Shared Memory with ID: " << shmid << endl;
   }
 
   // Attach the segment
-  mem = (int *) shmat(id, nullptr, 0);
+  mem = (int *) shmat(shmid, nullptr, 0);
   if (*(int *) mem == -1) {
     cerr << "Shared Memory: Attachment failed" << endl;
   } else {
@@ -28,6 +28,15 @@ int main(int argc, char *argv[]) {
 
   *mem = 1;
   cout << "Altered Shared Memory content to: " << *mem << endl;
+
+  // Remove shared memory segment
+  // err = shmctl(shmid, IPC_RMID, nullptr);
+  // if (err == -1) {
+  //   cerr << "Shared Memory: Removal" << endl;
+  // } else {
+  //   cout << "Shared Memory: Removed Shared Segment with code " << err << endl;
+  // }
+
 
   return 0;
 }
