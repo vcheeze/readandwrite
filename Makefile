@@ -1,4 +1,4 @@
-all: reader writer manager
+all: reader writer creator destroyer
 
 reader: reader.o
 	g++ reader.o -o reader
@@ -6,8 +6,11 @@ reader: reader.o
 writer: writer.o
 	g++ writer.o -o writer
 
-manager: main.o
-	g++ main.o -o manager
+creator: creator.o
+	g++ creator.o -o creator
+
+destroyer: destroyer.o
+	g++ destroyer.o -o destroyer
 
 reader.o: reader.cpp
 	g++ -c reader.cpp
@@ -15,8 +18,11 @@ reader.o: reader.cpp
 writer.o: writer.cpp
 	g++ -c writer.cpp
 
-main.o: main.cpp
-	g++ -c main.cpp
+creator.o: creator.cpp
+	g++ -c creator.cpp
+
+destroyer.o: destroyer.cpp
+	g++ -c destroyer.cpp
 
 clean:
-	rm -f *.o reader writer
+	rm -f *.o reader writer creator destroyer

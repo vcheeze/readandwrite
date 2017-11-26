@@ -1,4 +1,5 @@
 *.o
 reader
 writer
-manager
+creator
+destroyer
