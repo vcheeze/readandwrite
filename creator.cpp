@@ -10,6 +10,8 @@
 
 using namespace std;
 
+#define DATA_SIZE 20
+
 
 int main(int argc, char *argv[]) {
   std::cout << "Creating the shared segment!" << std::endl;
@@ -18,7 +20,7 @@ int main(int argc, char *argv[]) {
   int *mem;
 
   // Create shared memory segment
-  shmid = shmget(IPC_PRIVATE, 20*sizeof(int), 0666); // instantiate with size for int[20]
+  shmid = shmget(IPC_PRIVATE, DATA_SIZE*(sizeof(pid_t) + sizeof(int)), 0666); // instantiate with size for int[20]
   if (shmid == -1) {
     cerr << "Shared Memory: Creation failed" << endl;
   } else {
@@ -30,20 +32,12 @@ int main(int argc, char *argv[]) {
   if (*mem == -1) {
     cerr << "Shared Memory: Attachment failed" << endl;
   } else {
-    cout << "Attached Shared Memory whose content is: " << mem[1] << endl;
+    cout << "Attached Shared Memory" << endl;
   }
 
-  mem[1] = 1;
-  cout << "Altered Shared Memory content to: " << mem[1] << endl;
-
-  // Remove shared memory segment
-//  err = shmctl(shmid, IPC_RMID, nullptr);
-//  if (err == -1) {
-//    cerr << "Shared Memory: Removal" << endl;
-//  } else {
-//    cout << "Shared Memory: Removed Shared Segment with code " << err << endl;
-//  }
-
+  for (int i = 0; i < DATA_SIZE; i++) {
+    mem[i] = i;
+  }
 
   return 0;
 }

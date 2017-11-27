@@ -11,7 +11,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   cout << "Destroying Shared Memory Segment!" << endl;
   if (argc != 3) {
-    cerr << "Please provide shmid with -r flag." << endl;
+    cerr << "Please provide shmid with -s flag." << endl;
     return -1;
   }
 
