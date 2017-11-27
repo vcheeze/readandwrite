@@ -7,20 +7,22 @@
 #include <iostream>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <semaphore.h>
 
 using namespace std;
 
 #define DATA_SIZE 20
+#define CTRL_SIZE 3*sizeof(sem_t) + sizeof(int)
 
 
 int main(int argc, char *argv[]) {
   std::cout << "Creating the shared segment!" << std::endl;
 
   int shmid = 0;
-  int *mem;
+  int *mem, *data;
 
-  // Create shared memory segment
-  shmid = shmget(IPC_PRIVATE, DATA_SIZE*(sizeof(pid_t) + sizeof(int)), 0666); // instantiate with size for int[20]
+  // Create shared memory segment: size of semaphores + int
+  shmid = shmget(IPC_PRIVATE, CTRL_SIZE + DATA_SIZE*sizeof(int), 0666); // instantiate with size for int[20]
   if (shmid == -1) {
     cerr << "Shared Memory: Creation failed" << endl;
   } else {
@@ -34,9 +36,10 @@ int main(int argc, char *argv[]) {
   } else {
     cout << "Attached Shared Memory" << endl;
   }
+  data = mem + CTRL_SIZE;
 
   for (int i = 0; i < DATA_SIZE; i++) {
-    mem[i] = i;
+    data[i] = i;
   }
 
   return 0;

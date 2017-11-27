@@ -6,8 +6,11 @@
 #include <sys/shm.h>
 #include <vector>
 #include <unistd.h>
+#include <semaphore.h>
 
 using namespace std;
+
+#define CTRL_SIZE (3*sizeof(sem_t) + sizeof(int))
 
 
 int main(int argc, char *argv[]) {
@@ -16,9 +19,10 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  int lb = 0, ub = 0, shmid = 0, err = 0, i;
+  int lb = 0, ub = 0, shmid = 0, err = 0, i, retval;
   unsigned int time = 0;
-  int *mem;
+  int *read_count, *data;
+  sem_t *rw_mutex, *mutex, *turn;
 
   for (i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-r") == 0) {        // range: followed by lower bound and upper bound
@@ -31,31 +35,75 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  vector<int> data;
-
   cout << ">> Shared Memory Segment ID: " << shmid << endl;
   cout << ">> Lower Bound: " << lb << " | " << "Upper Bound: " << ub << endl;
   cout << ">> Time: " << time << endl;
 
-  mem = (int *) shmat(shmid, nullptr, 0);
-  if (*mem == -1) {
+  vector<int> d; // store the data that will be read
+
+  rw_mutex = (sem_t *) shmat(shmid, nullptr, 0);
+  if (rw_mutex == (void *) -1) {
     cerr << ">> Reader: Attachment" << endl;
   } else {
-    cout << ">> Reader: Attached to Shared Memory Segment whose content is: " << *mem << endl;
+    cout << ">> Reader: Attached to Shared Memory Segment whose content is: " << *rw_mutex << endl;
   }
 
-  // Perform read
-  for (i = lb; i < ub; i++) {
-    data.push_back(mem[i]);
+  data = rw_mutex + CTRL_SIZE;
+  mutex = rw_mutex + sizeof(sem_t);
+  turn = rw_mutex + 2*(sizeof(sem_t));
+  read_count = rw_mutex + 3*(sizeof(sem_t));
+
+  // initialize the semaphores
+  retval = sem_init(rw_mutex, 1, 1);
+  if (retval != 0) {
+    cerr << ">> Reader: Could not initialize semaphore rw_mutex" << endl;
+    return -1;
+  }
+  retval = sem_init(mutex, 1, 1);
+  if (retval != 0) {
+    cerr << ">> Reader: Could not initialize semaphore mutex" << endl;
+    return -1;
+  }
+  retval = sem_init(turn, 1, 1);
+  if (retval != 0) {
+    cerr << ">> Reader: Could not initialize semaphore turn" << endl;
+    return -1;
   }
 
-  // Print data
+  sem_trywait(turn);
+  sem_trywait(mutex);
+
+  // set read_count
+  *read_count += 1;
+  if (*read_count == 1) {
+    sem_trywait(rw_mutex);
+  }
+
+  sem_post(turn);
+  sem_post(mutex);
+
+  // perform read
+  for (i = lb; i <= ub; i++) {
+    d.push_back(data[i]);
+  }
+
+  // print data
   cout << ">> Reader: read data from Shared Memory Segment: " << endl;
-  for (i = 0; i < data.size(); i++) {
-    cout << ">> " << data[i] << endl;
+  for (i = 0; i < d.size(); i++) {
+    cout << ">> " << d[i] << endl;
   }
 
-  err = shmdt((void *) mem);
+  sem_trywait(mutex);
+
+  *read_count -= 1;
+  if (*read_count == 0) {
+    sem_post(rw_mutex);
+  }
+
+  sem_post(mutex);
+
+  // detach the Shared Memory Segment
+  err = shmdt((void *) rw_mutex);
   if (err == -1) {
     cerr << ">> Reader: Detachment" << endl;
   } else {
