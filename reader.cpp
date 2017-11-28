@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  int lb = 0, ub = 0, shmid = 0, err = 0, i, retval;
+  int lb = 0, ub = 0, shmid = 0, err = 0, i, retval, val;
   unsigned int time = 0;
   int *read_count, *data;
   sem_t *rw_mutex, *mutex, *turn;
@@ -55,21 +55,21 @@ int main(int argc, char *argv[]) {
   read_count = rw_mutex + 3*(sizeof(sem_t));
 
   // initialize the semaphores
-  rw_mutex = sem_open("rw_mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  rw_mutex = sem_open("rw_mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (rw_mutex != SEM_FAILED) {
     cout << ">> Created semaphore rw_mutex" << endl;
   } else if (errno == EEXIST) {
     cerr << ">> Reader: semaphore rw_mutex exists already" << endl;
     rw_mutex = sem_open("rw_mutex", 0);
   }
-  mutex = sem_open("mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  mutex = sem_open("mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (mutex != SEM_FAILED) {
     cout << ">> Created semaphore mutex" << endl;
   } else if (errno == EEXIST) {
     cerr << ">> Reader: semaphore mutex exists already" << endl;
     mutex = sem_open("mutex", 0);
   }
-  turn = sem_open("turn", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  turn = sem_open("turn", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (turn != SEM_FAILED) {
     cout << ">> Created semaphore turn" << endl;
   } else if (errno == EEXIST) {
@@ -77,15 +77,13 @@ int main(int argc, char *argv[]) {
     turn = sem_open("turn", 0);
   }
 
-  sem_trywait(turn);
-  sem_trywait(mutex);
+  sem_wait(turn);
+  sem_wait(mutex);
 
   // set read_count
-  cout << "Read count is now: " << *read_count << endl;
   *read_count += 1;
-  cout << "Read count is now: " << *read_count << endl;
   if (*read_count == 1) {
-    sem_trywait(rw_mutex);
+    sem_wait(rw_mutex);
   }
 
   sem_post(turn);
@@ -102,11 +100,9 @@ int main(int argc, char *argv[]) {
     cout << ">> " << d[i] << endl;
   }
 
-  sem_trywait(mutex);
+  sem_wait(mutex);
 
-  cout << "Read count is now: " << *read_count << endl;
   *read_count -= 1;
-  cout << "Read count is now: " << *read_count << endl;
   if (*read_count == 0) {
     sem_post(rw_mutex);
   }

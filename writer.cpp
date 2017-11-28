@@ -52,21 +52,21 @@ int main(int argc, char *argv[]) {
   turn = rw_mutex + 2*(sizeof(sem_t));
 
   // initialize the semaphores
-  rw_mutex = sem_open("rw_mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  rw_mutex = sem_open("rw_mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (rw_mutex != SEM_FAILED) {
     cout << ">> Created semaphore rw_mutex" << endl;
   } else if (errno == EEXIST) {
     cerr << ">> Writer: semaphore rw_mutex exists already" << endl;
     rw_mutex = sem_open("rw_mutex", 0);
   }
-  mutex = sem_open("mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  mutex = sem_open("mutex", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (mutex != SEM_FAILED) {
     cout << ">> Created semaphore mutex" << endl;
   } else if (errno == EEXIST) {
     cerr << ">> Writer: semaphore mutex exists already" << endl;
     mutex = sem_open("mutex", 0);
   }
-  turn = sem_open("turn", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 0);
+  turn = sem_open("turn", O_CREAT|O_EXCL, S_IRUSR|S_IWUSR, 1);
   if (turn != SEM_FAILED) {
     cout << ">> Created semaphore turn" << endl;
   } else if (errno == EEXIST) {
