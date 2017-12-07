@@ -100,6 +100,8 @@ int main(int argc, char *argv[]) {
     cout << ">> " << d[i] << endl;
   }
 
+  sleep(time);
+
   sem_wait(mutex);
 
   *read_count -= 1;
@@ -116,8 +118,6 @@ int main(int argc, char *argv[]) {
   } else {
     cout << ">> Reader: Detached from Shared Memory Segment with code " << err << endl;
   }
-
-  sleep(time);
 
   return 0;
 }

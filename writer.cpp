@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
     turn = sem_open("turn", 0);
   }
 
-  sem_trywait(turn);
-  sem_trywait(rw_mutex);
+  sem_wait(turn);
+  sem_wait(rw_mutex);
 //  sem_post(turn);
 
   // Perform write
@@ -90,6 +90,8 @@ int main(int argc, char *argv[]) {
     cout << ">> " << data[i] << endl;
   }
 
+  sleep(time);
+
   sem_post(rw_mutex);
   sem_post(turn);
 
@@ -99,8 +101,6 @@ int main(int argc, char *argv[]) {
   } else {
     cout << ">> Writer: Detached from Shared Memory Segment with code " << err << endl;
   }
-
-  sleep(time);
 
   return 0;
 }

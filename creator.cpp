@@ -16,9 +16,10 @@ using namespace std;
 
 
 int main(int argc, char *argv[]) {
-  std::cout << "Creating the shared segment!" << std::endl;
+  cout << "Creating the shared segment!" << endl;
 
   int shmid = 0;
+  // sem_t *sem;
   int *mem, *data;
 
   // Create shared memory segment: size of semaphores + int
@@ -36,6 +37,14 @@ int main(int argc, char *argv[]) {
   } else {
     cout << "Attached Shared Memory" << endl;
   }
+  // sem = mem;
+	// /* Initialize the semaphore. */
+	// retval = sem_init(&sem, 1, 2);
+	// if (retval != 0) {
+	// 	perror("Couldn't initialize.");
+	// 	exit(3);
+	// }
+
   data = mem + CTRL_SIZE;
 
   for (int i = 0; i < DATA_SIZE; i++) {
